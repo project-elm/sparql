@@ -300,3 +300,41 @@ func (r *Repo) Update(q string) error {
 	}
 	return nil
 }
+
+
+func (r *Repo) UpdateSparql(q string) error {
+	form := url.Values{}
+	form.Set("update", q)
+	b := form.Encode()
+
+	req, err := http.NewRequest(
+		"POST",
+		r.endpoint,
+		bytes.NewBufferString(b))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/sparql-query")
+	req.Header.Set("Content-Length", strconv.Itoa(len(b)))
+
+	resp, err := r.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		b, err := ioutil.ReadAll(resp.Body)
+		var msg string
+		if err != nil {
+			msg = "Failed to read response body"
+		} else {
+			if strings.TrimSpace(string(b)) != "" {
+				msg = "Response body: \n" + string(b)
+			}
+		}
+		return fmt.Errorf("Update: SPARQL request failed: %s. "+msg, resp.Status)
+	}
+	return nil
+}

@@ -315,7 +315,7 @@ func (r *Repo) UpdateSparql(q string) error {
 		return err
 	}
 
-	req.Header.Set("Content-Type", "application/sparql-query")
+	req.Header.Set("Content-Type", "application/sparql-update")
 	req.Header.Set("Content-Length", strconv.Itoa(len(b)))
 
 	resp, err := r.client.Do(req)
